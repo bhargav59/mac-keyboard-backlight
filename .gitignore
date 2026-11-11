@@ -1,0 +1,18 @@
+# Build outputs
+build/
+*.o
+*.dSYM/
+*.out
+*.err
+
+# macOS bundles & system files
+*.app/
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*~

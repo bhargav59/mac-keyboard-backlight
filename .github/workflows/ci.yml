@@ -1,0 +1,26 @@
+name: Build & Test (macOS)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build kb-backlight
+        run: make
+
+      - name: Run unit test suite
+        env:
+          CI: "true"
+        run: make test
+
+      - name: Verify CLI binary
+        run: ./build/kb-backlight --help
