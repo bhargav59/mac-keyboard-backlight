@@ -106,14 +106,26 @@ int main(int argc, char* argv[]) {
             return 0;
         }
 
+        if (command == "--prompt-ax") {
+            HotkeyManager::runAccessibilityPromptLoop();
+            return 0;
+        }
+
         if (command == "--permissions" || command == "--request-permission") {
-            std::cout << "Opening System Settings > Privacy & Security > Accessibility...\n";
+            std::cout << "Requesting Accessibility permission for KeyboardBacklight.app...\n";
+            const char* home = std::getenv("HOME");
+            std::string appPath = home ? (std::string(home) + "/Applications/KeyboardBacklight.app") : "";
+            if (!appPath.empty() && fs::exists(appPath)) {
+                std::string cmd = "open -W -n \"" + appPath + "\" --args --prompt-ax 2>/dev/null";
+                std::system(cmd.c_str());
+            } else {
+                HotkeyManager::promptAccessibilityPermission();
+            }
             HotkeyManager::openAccessibilitySettings();
-            HotkeyManager::promptAccessibilityPermission();
-            std::cout << "\nIMPORTANT: Add and toggle ON 'KeyboardBacklight' from ~/Applications:\n";
-            std::cout << "  1. Click '+' -> press Cmd+Shift+G -> type ~/Applications\n";
-            std::cout << "  2. Select KeyboardBacklight.app -> Open -> toggle ON\n";
-            std::cout << "Once enabled, direct Cmd + F1 and Cmd + F2 work in the background automatically.\n";
+            std::cout << "\nPlease toggle ON 'Keyboard Backlight Controller' (KeyboardBacklight) in:\n";
+            std::cout << "  System Settings > Privacy & Security > Accessibility\n";
+            std::cout << "(If not listed, click '+' -> Cmd+Shift+G -> ~/Applications -> KeyboardBacklight.app)\n";
+            std::cout << "Once enabled, direct Cmd + F1 and Cmd + F2 work automatically.\n";
             return 0;
         }
 

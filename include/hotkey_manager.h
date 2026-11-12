@@ -35,6 +35,9 @@ public:
     // Request accessibility permission prompt from macOS
     static void promptAccessibilityPermission();
 
+    // Run Cocoa accessory loop briefly so LaunchServices registers AX prompt
+    static void runAccessibilityPromptLoop();
+
     // Open System Settings directly to Privacy & Security -> Accessibility
     static void openAccessibilitySettings();
 
