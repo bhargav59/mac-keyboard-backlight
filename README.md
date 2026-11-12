@@ -29,7 +29,20 @@ A lightweight, native C++17 / Objective-C++ system daemon and CLI for **Apple Si
 
 ---
 
-## Quick Start (Build & Install)
+## Quick Start
+
+### Install via Homebrew (Recommended)
+
+```bash
+brew install bhargav59/tap/kb-backlight
+```
+
+To upgrade later:
+```bash
+brew upgrade kb-backlight
+```
+
+### Build from Source
 
 ```bash
 git clone https://github.com/bhargav59/mac-keyboard-backlight.git
