@@ -59,8 +59,8 @@ export PATH="$HOME/.local/bin:$PATH"
    ```bash
    kb-backlight --permissions
    ```
-   In **System Settings → Privacy & Security → Accessibility**:
-   - Click `+` → press `Cmd + Shift + G` → enter `~/Applications` → select **`KeyboardBacklight`** → toggle **ON**.
+   In **System Settings → Privacy & Security → Device Control and Data Access** *(labeled **Accessibility** on macOS 15 and earlier)*:
+   - Toggle ON **`Keyboard Backlight Controller`** (`KeyboardBacklight`) — or click `+` → press `Cmd + Shift + G` → enter `~/Applications` → select **`KeyboardBacklight.app`** → toggle **ON**.
    - The running daemon detects the permission within 1 second and activates direct `Cmd + F1` / `Cmd + F2` automatically.
 
    > **Zero-permission alternative:** Without Accessibility permission, **`Fn + Cmd + F1`**, **`Fn + Cmd + F2`**, and **`Fn + Cmd + Shift + F1`** work immediately (or turn on *Use F1, F2, etc. keys as standard function keys* in System Settings).

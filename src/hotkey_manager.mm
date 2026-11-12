@@ -348,7 +348,8 @@ bool HotkeyManager::start() {
         std::cout << " [NOTICE] Accessibility Permission Needed for Direct Media Keys" << std::endl;
         std::cout << "========================================================" << std::endl;
         std::cout << " 1. TO USE DIRECT Cmd+F1 / Cmd+F2 (WITHOUT Fn):" << std::endl;
-        std::cout << "    Enable Accessibility permission in System Settings." << std::endl;
+        std::cout << "    Enable KeyboardBacklight under System Settings > Privacy & Security" << std::endl;
+        std::cout << "    > Device Control and Data Access (labeled 'Accessibility' on older macOS)." << std::endl;
         std::cout << "    (Run 'kb-backlight --permissions' to open the settings pane)." << std::endl;
         std::cout << " 2. TO USE RIGHT NOW WITH ZERO PERMISSIONS:" << std::endl;
         std::cout << "    Press Fn + Cmd + F1  (Brightness Down / OFF)" << std::endl;

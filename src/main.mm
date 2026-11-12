@@ -123,7 +123,8 @@ int main(int argc, char* argv[]) {
             }
             HotkeyManager::openAccessibilitySettings();
             std::cout << "\nPlease toggle ON 'Keyboard Backlight Controller' (KeyboardBacklight) in:\n";
-            std::cout << "  System Settings > Privacy & Security > Accessibility\n";
+            std::cout << "  System Settings > Privacy & Security > Device Control and Data Access\n";
+            std::cout << "  (labeled 'Accessibility' on macOS 15 and earlier)\n";
             std::cout << "(If not listed, click '+' -> Cmd+Shift+G -> ~/Applications -> KeyboardBacklight.app)\n";
             std::cout << "Once enabled, direct Cmd + F1 and Cmd + F2 work automatically.\n";
             return 0;
@@ -156,7 +157,7 @@ int main(int argc, char* argv[]) {
             bool terminalTrusted = HotkeyManager::isAccessibilityGranted();
 
             std::cout << "  Background Daemon Event Tap: "
-                      << (daemonTapActive ? "ACTIVE (Direct Cmd+F1/F2 working)" : "INACTIVE (Enable KeyboardBacklight.app in Accessibility)")
+                      << (daemonTapActive ? "ACTIVE (Direct Cmd+F1/F2 working)" : "INACTIVE (Enable KeyboardBacklight in Device Control & Data Access / Accessibility)")
                       << "\n";
             std::cout << "  Current Terminal Accessibility: "
                       << (terminalTrusted ? "GRANTED" : "NOT GRANTED")
