@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <csignal>
@@ -109,8 +110,10 @@ int main(int argc, char* argv[]) {
             std::cout << "Opening System Settings > Privacy & Security > Accessibility...\n";
             HotkeyManager::openAccessibilitySettings();
             HotkeyManager::promptAccessibilityPermission();
-            std::cout << "\nPlease ensure your Terminal (or kb-backlight) switch is toggled ON.\n";
-            std::cout << "Once enabled, Cmd + F1 and Cmd + F2 will work directly without needing the Fn key.\n";
+            std::cout << "\nIMPORTANT: Add and toggle ON 'KeyboardBacklight' from ~/Applications:\n";
+            std::cout << "  1. Click '+' -> press Cmd+Shift+G -> type ~/Applications\n";
+            std::cout << "  2. Select KeyboardBacklight.app -> Open -> toggle ON\n";
+            std::cout << "Once enabled, direct Cmd + F1 and Cmd + F2 work in the background automatically.\n";
             return 0;
         }
 
@@ -131,9 +134,20 @@ int main(int argc, char* argv[]) {
                 std::cout << "    - Device ID: " << id << "\n";
             }
             DaemonManager::printStatus();
-            bool trusted = HotkeyManager::isAccessibilityGranted();
-            std::cout << "  Accessibility Permission: "
-                      << (trusted ? "GRANTED (Direct Cmd+F1/F2 active)" : "NOT GRANTED (Use Fn+Cmd+F1/F2, or run 'kb-backlight --permissions')")
+
+            std::string daemonTapState = "unknown";
+            std::ifstream stateFile("/tmp/keyboardbacklight.state");
+            if (stateFile.is_open()) {
+                std::getline(stateFile, daemonTapState);
+            }
+            bool daemonTapActive = (daemonTapState == "event_tap=active");
+            bool terminalTrusted = HotkeyManager::isAccessibilityGranted();
+
+            std::cout << "  Background Daemon Event Tap: "
+                      << (daemonTapActive ? "ACTIVE (Direct Cmd+F1/F2 working)" : "INACTIVE (Enable KeyboardBacklight.app in Accessibility)")
+                      << "\n";
+            std::cout << "  Current Terminal Accessibility: "
+                      << (terminalTrusted ? "GRANTED" : "NOT GRANTED")
                       << "\n";
             return 0;
         }

@@ -1,8 +1,16 @@
 #import <Cocoa/Cocoa.h>
 #import <Carbon/Carbon.h>
 #include <iostream>
+#include <fstream>
 #include <cstdlib>
 #include "hotkey_manager.h"
+
+static void WriteDaemonTapState(bool active) {
+    std::ofstream out("/tmp/keyboardbacklight.state");
+    if (out.is_open()) {
+        out << (active ? "event_tap=active\n" : "event_tap=inactive\n");
+    }
+}
 
 // Forward declaration of C-callbacks
 static OSStatus CarbonHotKeyHandler(EventHandlerCallRef nextHandler, EventRef theEvent, void *userData);
@@ -86,8 +94,11 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
     }
 
     CGEventFlags flags = CGEventGetFlags(event);
-    bool cmdPressed = (flags & kCGEventFlagMaskCommand) != 0;
-    bool shiftPressed = (flags & kCGEventFlagMaskShift) != 0;
+    CGEventFlags liveFlags = CGEventSourceFlagsState(kCGEventSourceStateHIDSystemState);
+    bool cmdPressed = ((flags & kCGEventFlagMaskCommand) != 0) ||
+                      ((liveFlags & kCGEventFlagMaskCommand) != 0);
+    bool shiftPressed = ((flags & kCGEventFlagMaskShift) != 0) ||
+                        ((liveFlags & kCGEventFlagMaskShift) != 0);
 
     // Check SystemDefined (Media key) events
     if (type == 14) { // NSSystemDefined / NX_SYSDEFINED
@@ -100,12 +111,17 @@ static CGEventRef EventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
                 bool isDown = (((keyFlags & 0xFF00) >> 8) == 0xA);
                 bool isRepeat = (keyFlags & 0x1) != 0;
                 bool isCmd = cmdPressed || (([nsEvent modifierFlags] & NSEventModifierFlagCommand) != 0);
+                bool isShift = shiftPressed || (([nsEvent modifierFlags] & NSEventModifierFlagShift) != 0);
 
                 // NX_KEYTYPE_BRIGHTNESS_DOWN = 3, NX_KEYTYPE_BRIGHTNESS_UP = 2
                 // NX_KEYTYPE_ILLUMINATION_DOWN = 22, NX_KEYTYPE_ILLUMINATION_UP = 21
                 if (isCmd && (isDown || isRepeat)) {
                     if (keyCode == 3 || keyCode == 22) { // Screen Brightness Down or Illumination Down
-                        manager->triggerAction(HotkeyAction::BRIGHTNESS_DOWN);
+                        if (isShift) {
+                            manager->triggerAction(HotkeyAction::BRIGHTNESS_TOGGLE);
+                        } else {
+                            manager->triggerAction(HotkeyAction::BRIGHTNESS_DOWN);
+                        }
                         return NULL; // Swallow event so screen brightness is untouched
                     } else if (keyCode == 2 || keyCode == 21) { // Screen Brightness Up or Illumination Up
                         manager->triggerAction(HotkeyAction::BRIGHTNESS_UP);
@@ -217,14 +233,26 @@ bool HotkeyManager::setupEventTap() {
 
     CGEventMask eventMask = (1ULL << kCGEventKeyDown) | (1ULL << 14); // 14 = NSSystemDefined
 
+    // Prefer HID-level tap so brightness keys & Cmd+F1 are intercepted before WindowServer
     CFMachPortRef tap = CGEventTapCreate(
-        kCGSessionEventTap,
+        kCGHIDEventTap,
         kCGHeadInsertEventTap,
         kCGEventTapOptionDefault,
         eventMask,
         EventTapCallback,
         this
     );
+
+    if (!tap) {
+        tap = CGEventTapCreate(
+            kCGSessionEventTap,
+            kCGHeadInsertEventTap,
+            kCGEventTapOptionDefault,
+            eventMask,
+            EventTapCallback,
+            this
+        );
+    }
 
     if (!tap) {
         return false;
@@ -241,6 +269,7 @@ bool HotkeyManager::setupEventTap() {
     runLoopSource_ = source;
     CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopCommonModes);
     CGEventTapEnable(tap, true);
+    WriteDaemonTapState(true);
     return true;
 }
 
@@ -292,6 +321,7 @@ bool HotkeyManager::start() {
     if (tapOk) {
         std::cout << "[Hotkey] CoreGraphics Event Tap is ACTIVE: Direct Cmd+F1 and Cmd+F2 ready!" << std::endl;
     } else {
+        WriteDaemonTapState(false);
         std::cout << "\n========================================================" << std::endl;
         std::cout << " [NOTICE] Accessibility Permission Needed for Direct Media Keys" << std::endl;
         std::cout << "========================================================" << std::endl;
